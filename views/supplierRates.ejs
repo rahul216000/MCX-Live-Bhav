@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>MCX Live Rates</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #1A2A80;
+      --secondary: #3B38A0;
+      --accent: #7A85C1;
+      --light: #B2B0E8;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: var(--primary);
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .container {
+      background: var(--secondary);
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      width: 350px;
+      text-align: center;
+      position: relative;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+      font-size: 1.6rem;
+    }
+
+    .rate {
+      background: var(--accent);
+      margin: 10px 0;
+      padding: 15px;
+      border-radius: 12px;
+      font-size: 1.4rem;
+      font-weight: 600;
+    }
+
+    .label {
+      font-weight: 600;
+    }
+
+    /* Settings icon */
+    .settings-icon {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      font-size: 1.4rem;
+      cursor: pointer;
+      background: var(--light);
+      color: var(--primary);
+      border-radius: 50%;
+      width: 35px;
+      height: 35px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+    }
+    .settings-icon:hover {
+      background: #fff;
+    }
+
+    /* Modal */
+    .modal {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.6);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      padding: 10px;
+    }
+
+    .modal-content {
+      background: #fff;
+      color: var(--primary);
+      padding: 20px;
+      border-radius: 15px;
+      width: 300px;
+      text-align: left;
+    }
+
+    .modal-content h2 {
+      margin-bottom: 15px;
+      font-size: 1.2rem;
+      text-align: center;
+    }
+
+    .modal-content label {
+      font-weight: 600;
+      font-size: 0.9rem;
+      display: block;
+      margin-top: 10px;
+    }
+
+    .modal-content input {
+      width: 92%;
+      padding: 12px;
+      margin-top: 5px;
+      border-radius: 8px;
+      border: 1px solid var(--accent);
+      font-family: inherit;
+    }
+
+    .modal-content button {
+      margin-top: 15px;
+      padding: 12px 15px;
+      border: none;
+      border-radius: 8px;
+      background: var(--primary);
+      color: #fff;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    /* Mobile responsiveness */
+    @media (max-width: 480px) {
+      .container {
+        width: 90%;
+        padding: 20px;
+      }
+      .modal-content {
+        width: 100%;
+        border-radius: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="settings-icon" onclick="openModal()">⚙️</div>
+    <h1>Supplier Rates</h1>
+    <div class="rate">
+      <span class="label">Gold:</span> 
+      <span id="gold"><%= rates.gold %></span>
+    </div>
+    <div class="rate">
+      <span class="label">Silver:</span> 
+      <span id="silver"><%= rates.silver %></span>
+    </div>
+    <p style="margin-top:10px; font-size:0.9rem; opacity:0.8;" id="lastUpdated"></p>
+
+    <div>
+      <a href="/" style="color: #fff; text-decoration: underline; font-size: 0.9rem;">Back</a>
+      <a href="/selling" style="color: #fff; text-decoration: underline; font-size: 0.9rem;">Selling Rates</a>
+      <a href="/setting" style="color: #fff; text-decoration: underline; font-size: 0.9rem;">Settings</a>
+    </div>
+  </div>
+
+  <!-- Settings Modal -->
+  <div class="modal" id="settingsModal">
+    <div class="modal-content">
+      <h2>Adjust Rates</h2>
+      <label for="goldAdjustSupplier">Gold Adjustment</label>
+      <input type="number" id="goldAdjustSupplier" placeholder="Enter gold adjustment">
+      
+      <label for="silverAdjustSupplier">Silver Adjustment</label>
+      <input type="number" id="silverAdjustSupplier" placeholder="Enter silver adjustment">
+      
+      <button onclick="saveAdjustments()">Save</button>
+    </div>
+  </div>
+
+  <script>
+    let goldAdjustSupplier = 0;
+    let silverAdjustSupplier = 0;
+
+    // Load adjustments from localStorage
+    if(localStorage.getItem("goldAdjustSupplier")) {
+      goldAdjustSupplier = parseFloat(localStorage.getItem("goldAdjustSupplier")) || 0;
+    }
+    if(localStorage.getItem("silverAdjustSupplier")) {
+      silverAdjustSupplier = parseFloat(localStorage.getItem("silverAdjustSupplier")) || 0;
+    }
+
+    // Fill modal inputs with saved values
+    window.onload = () => {
+      document.getElementById("goldAdjustSupplier").value = goldAdjustSupplier;
+      document.getElementById("silverAdjustSupplier").value = silverAdjustSupplier;
+      refreshRates();
+    }
+
+    // Round to nearest 50
+    function roundToNearest50(num) {
+      return num
+    }
+
+    async function refreshRates() {
+      try {
+        const res = await fetch('/api/rates');
+        const data = await res.json();
+
+        if (data.gold) {
+          let goldValue = parseFloat(data.gold.replace(/,/g,'')) + goldAdjustSupplier;
+          document.getElementById('gold').textContent = 
+            roundToNearest50(goldValue).toLocaleString();
+        }
+
+        if (data.silver) {
+          let silverValue = parseFloat(data.silver.replace(/,/g,'')) + silverAdjustSupplier;
+          document.getElementById('silver').textContent = 
+            roundToNearest50(silverValue).toLocaleString();
+        }
+
+        document.getElementById('lastUpdated').textContent = "Last updated: " + new Date().toLocaleTimeString();
+      } catch (err) {
+        console.error("Error fetching rates:", err);
+      }
+    }
+
+    function openModal() {
+      document.getElementById('settingsModal').style.display = 'flex';
+    }
+
+    function saveAdjustments() {
+      goldAdjustSupplier = parseFloat(document.getElementById('goldAdjustSupplier').value) || 0;
+      silverAdjustSupplier = parseFloat(document.getElementById('silverAdjustSupplier').value) || 0;
+
+      // Save to localStorage
+      localStorage.setItem("goldAdjustSupplier", goldAdjustSupplier);
+      localStorage.setItem("silverAdjustSupplier", silverAdjustSupplier);
+
+      document.getElementById('settingsModal').style.display = 'none';
+      refreshRates();
+    }
+
+    // Close modal on outside click
+    window.onclick = function(e) {
+      if (e.target.id === "settingsModal") {
+        document.getElementById('settingsModal').style.display = 'none';
+      }
+    };
+
+    // Auto-refresh every 5 seconds
+    setInterval(refreshRates, 5000);
+  </script>
+</body>
+</html>

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rates Dashboard</title>
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#5898b7">
+
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/sw.js")
+        .then(() => console.log("Service Worker registered"))
+        .catch(err => console.error("SW failed", err));
+    }
+  </script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #1A2A80;
+      --secondary: #3B38A0;
+      --accent: #7A85C1;
+      --light: #B2B0E8;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Poppins', sans-serif;
+      background: var(--primary);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      justify-content: center;
+      align-items: center;
+    }
+
+    h1 {
+      margin-bottom: 2rem;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1.5rem;
+      width: 90%;
+      max-width: 800px;
+    }
+
+    .card {
+      background: var(--secondary);
+      border-radius: 16px;
+      padding: 2rem;
+      text-align: center;
+      font-size: 1.2rem;
+      font-weight: 600;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .card:hover {
+      background: var(--accent);
+      transform: translateY(-6px);
+    }
+
+    .card a {
+      text-decoration: none;
+      color: #fff;
+      display: block;
+    }
+
+    @media (max-width: 600px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      /* .card {
+        width: 100%;
+      } */
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Rates Dashboard</h1>
+
+  <div class="grid" style="margin-bottom: 1rem;">
+    <div class="card"><a href="/selling">Selling Rates</a></div>
+    <div class="card"><a href="/buying">Buying Rates</a></div>
+    <div class="card"><a href="/supplier">Supplier Rates</a></div>
+    <div class="card"><a href="/setting">Settings</a></div>
+  </div>
+</body>
+
+</html>
